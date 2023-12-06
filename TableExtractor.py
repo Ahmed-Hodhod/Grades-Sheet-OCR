@@ -57,20 +57,21 @@ class TableExtractor:
         self.inverted_image  = np.invert(self.thresholded_image)#cv2.bitwise_not(self.thresholded_image)
 
     def dilate_image(self):
-        self.dilated_image = morphology.dilation(self.inverted_image)
+
+        # Finally, apply a dilation operation to enlarge foreground regions
+        self.dilated_image = morphology.dilation(self.inverted_image, morphology.square(13))
 
     def find_contours(self):
         # Find contours in the dilated binary image
-        self.contours = measure.find_contours(self.dilated_image, level=0.5)
-        self.image_with_all_contours = self.image.copy()
+        self.contours = measure.find_contours(self.dilated_image, level=0.8)
 
-        # Visualize the original image and contours
-        fig, ax = plt.subplots()
-        ax.imshow(self.image_with_all_contours, cmap='gray')
+        # Create an empty image to draw contours on
+        self.image_with_all_contours = np.zeros_like(self.dilated_image, dtype=np.uint8)
 
-        # Plot each contour on the image
+        # Draw each contour on the image
         for contour in self.contours:
-            ax.plot(contour[:, 1], contour[:, 0], linewidth=2, color='lime')
+            rr, cc = draw.polygon(contour[:, 0], contour[:, 1])
+            self.image_with_all_contours[rr, cc] =1
 
 
 
@@ -159,6 +160,14 @@ class TableExtractor:
     
     def store_process_image(self, file_name, image):
         path = "./process_images/table_extractor/" + file_name
-        io.imsave(path,  (image * 255).astype(np.uint8))
+        # Convert the image to uint8 format (if it's not already)
+        image_uint8 = (image * 255).astype(np.uint8)
+
+        # Create a Pillow Image object
+        image_pillow = Image.fromarray(image_uint8)
+
+        # Save the image using Pillow
+        image_pillow.save(path)
+
         
         
