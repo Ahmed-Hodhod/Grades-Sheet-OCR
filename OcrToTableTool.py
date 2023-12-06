@@ -103,23 +103,33 @@ class OcrToTableTool:
         
         data = np.array(self.first_col)
         # Calculate the first and third quartiles (Q1 and Q3)
-        hist, edges = np.histogram(data[:,0], bins=30)
-
-        # Identify the bin with the maximum frequency
-        max_freq_bin_index = np.argmax(hist)
-        most_frequent_range = (edges[max_freq_bin_index], edges[max_freq_bin_index + 1])
-        print(most_frequent_range)
+        hist, edges = np.histogram(data[:,0], bins=20)
+        max_freq_starting_index = np.argmax(hist)
         
         x0 = data[:,0]
-        condition1 = x0 >= edges[max_freq_bin_index] - 20 
-        condition2 = x0 <= edges[max_freq_bin_index] + 20
-        filter = condition1 & condition2
+        condition1 = x0 >= edges[max_freq_starting_index] - 20 
+        condition2 = x0 <= edges[max_freq_starting_index] + 20
+
+
+        hist, edges = np.histogram(data[:,2], bins=20)
+        max_freq_index = np.argmax(hist)
+        
+        condition3 = data[:,2] >= edges[max_freq_index] - 40
+        condition4 = data[:,2] <= edges[max_freq_index] + 40
+        
+        hist, edges = np.histogram(data[:,3], bins=20)
+        max_freq_index = np.argmax(hist)
+        condition5 = data[:,3] >= edges[max_freq_index] - 20 
+        condition6 = data[:,3] <= edges[max_freq_index] + 20
+
+        filter = condition1 & condition2 & condition3 & condition4 & condition5 & condition6
         removed_data = data[~filter]
         filtered_data= data[filter]
         print("x0: ", x0)
         print("data", data , "\n", len(data))
         print("filtered", filtered_data, "\n", len(filtered_data))
-        print("removed", removed_data, "\n" , len(removed_data))
+#        print("removed", removed_data, "\n" , len(removed_data))
+
         for i,box in enumerate(filtered_data):
             x, y, w, h = box
             y = y - 5
