@@ -1,22 +1,29 @@
-# import OcrToTableTool as ottt
+import OcrToTableTool as ottt
 import TableExtractor as te
-# import TableLinesRemover as tlr
-import skimage 
-from commonfunctions import * 
+import TableLinesRemover as tlr
+import cv2
 
 
 path_to_image = "nutrition.jpg"
+path_to_image = "grade_sheet/gradesheet/IMG_6241.JPG"
 table_extractor = te.TableExtractor(path_to_image)
 perspective_corrected_image = table_extractor.execute()
-# cv2.imshow("perspective_corrected_image", perspective_corrected_image)
-#show_images([perspective_corrected_image], ["perspective corrected image"])
+#cv2.imshow("perspective_corrected_image", perspective_corrected_image)
 
-# lines_remover = tlr.TableLinesRemover(perspective_corrected_image)
-# image_without_lines = lines_remover.execute()
-# cv2.imshow("image_without_lines", image_without_lines)
+lines_remover = tlr.TableLinesRemover(perspective_corrected_image)
+image_without_lines = lines_remover.execute()
+#cv2.imshow("image_without_lines", image_without_lines)
 
-# ocr_tool = ottt.OcrToTableTool(image_without_lines, perspective_corrected_image)
-# ocr_tool.execute()
+
+
+
+ocr_tool = ottt.OcrToTableTool(image_without_lines, perspective_corrected_image)
+ocr_tool.execute()
+
+##################################### test #######################
+ocr_tool.extract_first_column()
+###################### test #################################
+
 
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
