@@ -1,1 +1,6 @@
 to switch to the root account in github codespace: sudo su root 
+
+
+source of ocr: 
+https://colab.research.google.com/drive/15fb5SxsUBIyQ_sucBlZ9F7nHMEcOIB1A?usp=sharing#scrollTo=7VdvaG7-1g00
+https://medium.com/analytics-vidhya/table-detection-and-text-extraction-5a2934f61caa
