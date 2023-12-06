@@ -96,12 +96,36 @@ class OcrToTableTool:
         self.third_col = []
         for row in self.rows:
             row.sort(key=lambda x: x[0])
-            self.first_col.append(row[0])
-            self.third_col.append(row[2]) if len(row) > 2 else None
+            self.first_col.append(list(row[0]))
+            self.third_col.append(list(row[2])) if len(row) > 2 else None
     
     def extract_first_column(self):
-        print(self.first_col)
+        
+        data = np.array(self.first_col)
+        # Calculate the first and third quartiles (Q1 and Q3)
+        hist, edges = np.histogram(data[:,0], bins=30)
 
+        # Identify the bin with the maximum frequency
+        max_freq_bin_index = np.argmax(hist)
+        most_frequent_range = (edges[max_freq_bin_index], edges[max_freq_bin_index + 1])
+        print(most_frequent_range)
+        
+        x0 = data[:,0]
+        condition1 = x0 >= edges[max_freq_bin_index] - 20 
+        condition2 = x0 <= edges[max_freq_bin_index] + 20
+        filter = condition1 & condition2
+        removed_data = data[~filter]
+        filtered_data= data[filter]
+        print("x0: ", x0)
+        print("data", data , "\n", len(data))
+        print("filtered", filtered_data, "\n", len(filtered_data))
+        print("removed", removed_data, "\n" , len(removed_data))
+        for i,box in enumerate(filtered_data):
+            x, y, w, h = box
+            y = y - 5
+            cropped_image = self.original_image[y:y+h, x:x+w]
+            image_slice_path = "./temp_test/img_" + str(i) + ".jpg"
+            cv2.imwrite(image_slice_path, cropped_image)
         
 
     def crop_each_bounding_box_and_ocr(self):
