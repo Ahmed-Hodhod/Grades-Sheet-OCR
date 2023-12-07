@@ -17,14 +17,14 @@ class TableLinesRemover:
         self.store_process_image("3_erode_vertical_lines.jpg", self.vertical_lines_eroded_image)
         self.erode_horizontal_lines()
         self.store_process_image("4_erode_horizontal_lines.jpg", self.horizontal_lines_eroded_image)
-        self.combine_eroded_images()
-        self.store_process_image("5_combined_eroded_images.jpg", self.combined_image)
-        self.dilate_combined_image_to_make_lines_thicker()
-        self.store_process_image("6_dilated_combined_image.jpg", self.combined_image_dilated)
-        self.subtract_combined_and_dilated_image_from_original_image()
-        self.store_process_image("7_image_without_lines.jpg", self.image_without_lines)
-        self.remove_noise_with_erode_and_dilate()
-        self.store_process_image("8_image_without_lines_noise_removed.jpg", self.image_without_lines_noise_removed)
+        # self.combine_eroded_images()
+        # self.store_process_image("5_combined_eroded_images.jpg", self.combined_image)
+        # self.dilate_combined_image_to_make_lines_thicker()
+        # self.store_process_image("6_dilated_combined_image.jpg", self.combined_image_dilated)
+        # self.subtract_combined_and_dilated_image_from_original_image()
+        # self.store_process_image("7_image_without_lines.jpg", self.image_without_lines)
+        # self.remove_noise_with_erode_and_dilate()
+        # self.store_process_image("8_image_without_lines_noise_removed.jpg", self.image_without_lines_noise_removed)
         return self.image_without_lines_noise_removed
 
     def grayscale_image(self):
@@ -53,9 +53,16 @@ class TableLinesRemover:
                [1],
                [1],
                [1],
+               [1],
+                [1],
+               [1],
+               [1],
                [1]])
-        self.horizontal_lines_eroded_image = cv2.erode(self.inverted_image, ver, iterations=10)
-        self.horizontal_lines_eroded_image = cv2.dilate(self.horizontal_lines_eroded_image, ver, iterations=10)
+        self.horizontal_lines_eroded_image = cv2.erode(self.inverted_image, ver, iterations=15)
+        self.horizontal_lines_eroded_image = cv2.dilate(self.horizontal_lines_eroded_image, ver, iterations=50)
+
+        ######test 
+        self.image_without_lines_noise_removed = self.horizontal_lines_eroded_image
 
     def combine_eroded_images(self):
         self.combined_image = cv2.add(self.vertical_lines_eroded_image, self.horizontal_lines_eroded_image)

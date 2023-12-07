@@ -35,11 +35,11 @@ class OcrToTableTool:
     def dilate_image(self):
         
         kernel_to_remove_gaps_between_words = np.array([
-                [1,1,1,] for _ in range(20)   
+                [1] for _ in range(4)   
         ])
         self.dilated_image = cv2.dilate(self.thresholded_image, kernel_to_remove_gaps_between_words, iterations=5)
-        simple_kernel = np.ones((5,5), np.uint8)
-        self.dilated_image = cv2.dilate(self.dilated_image, simple_kernel, iterations=2)
+        # simple_kernel = np.ones((5,5), np.uint8)
+        # self.dilated_image = cv2.dilate(self.dilated_image, simple_kernel, iterations=2)
 
 
     
