@@ -18,11 +18,8 @@ for i in range (1,25):
     lines_remover = tlr.TableLinesRemover(perspective_corrected_image)
     image_without_lines = lines_remover.execute()
     #cv2.imshow("image_without_lines", image_without_lines)
-    ########## test #############3
-    ######### test #############
 
-
-    ocr_tool = ottt.OcrToTableTool(image_without_lines, perspective_corrected_image)
+    ocr_tool = ottt.OcrToTableTool(image_without_lines, perspective_corrected_image, i)
     image_with_contours = ocr_tool.execute()
     cv2.imwrite(f"./column_images/{i}.jpg", image_with_contours)
 

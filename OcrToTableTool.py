@@ -4,9 +4,11 @@ import subprocess
 
 class OcrToTableTool:
 
-    def __init__(self, image, original_image):
+    def __init__(self, image, original_image, number):
         self.thresholded_image = image
         self.original_image = original_image
+        self.number = number 
+        
 
     def execute(self):
         self.dilate_image()
@@ -15,7 +17,7 @@ class OcrToTableTool:
         self.store_process_image('1_contours.jpg', self.image_with_contours_drawn)
         self.convert_contours_to_bounding_boxes()
         self.store_process_image('2_bounding_boxes.jpg', self.image_with_all_bounding_boxes)
-        self.mean_height = self.get_mean_height_of_bounding_boxes()
+        #self.mean_height = self.get_mean_height_of_bounding_boxes()
         # self.sort_bounding_boxes_by_y_coordinate()
         # self.club_all_bounding_boxes_by_similar_y_coordinates_into_rows()
         # self.sort_all_rows_by_x_coordinate()
@@ -64,112 +66,127 @@ class OcrToTableTool:
     def convert_contours_to_bounding_boxes(self):
         self.bounding_boxes = []
         self.image_with_all_bounding_boxes = self.original_image.copy()
-        for contour in self.contours:
+        sorted_contours = sorted(self.contours, key=lambda c: cv2.boundingRect(c)[0]) 
+
+        self.image = self.original_image
+ 
+        print(len(sorted_contours))
+        for i, contour in enumerate( sorted_contours[0:-1]):
+            
             x, y, w, h = cv2.boundingRect(contour)
-            self.bounding_boxes.append((x, y, w, h))
-            self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (x, y), (x + w, y + h), (0, 255, 0), 5)
+            x2, y2, w2, _ = cv2.boundingRect(sorted_contours[i+1])
 
-    def get_mean_height_of_bounding_boxes(self):
-        heights = []
-        for bounding_box in self.bounding_boxes:
-            x, y, w, h = bounding_box
-            heights.append(h)
-        return np.mean(heights)
-    
+            if x2 - x < 15:
+                continue 
 
-    def sort_bounding_boxes_by_y_coordinate(self):
-        self.bounding_boxes = sorted(self.bounding_boxes, key=lambda x: x[1])
-
-    def club_all_bounding_boxes_by_similar_y_coordinates_into_rows(self):
-        self.rows = []
-        half_of_mean_height = self.mean_height / 2
-        current_row = [ self.bounding_boxes[0] ]
-        for bounding_box in self.bounding_boxes[1:]:
-            current_bounding_box_y = bounding_box[1]
-            previous_bounding_box_y = current_row[-1][1]
-            distance_between_bounding_boxes = abs(current_bounding_box_y - previous_bounding_box_y)
-            if distance_between_bounding_boxes <= half_of_mean_height:
-                current_row.append(bounding_box)
-            else:
-                self.rows.append(current_row)
-                current_row = [ bounding_box ]
-        self.rows.append(current_row)
-
-    def sort_all_rows_by_x_coordinate(self):
-        self.first_col =[]
-        self.third_col = []
-        for row in self.rows:
-            row.sort(key=lambda x: x[0])
-            self.first_col.append(list(row[0]))
-            self.third_col.append(list(row[2])) if len(row) > 2 else None
-    
-    def extract_first_column(self):
-        
-        data = np.array(self.first_col)
-        # Calculate the first and third quartiles (Q1 and Q3)
-        hist, edges = np.histogram(data[:,0], bins=20)
-        max_freq_starting_index = np.argmax(hist)
-        
-        x0 = data[:,0]
-        condition1 = x0 >= edges[max_freq_starting_index]*.5
-        condition2 = x0 <= edges[max_freq_starting_index]*1.5
-
-
-        hist, edges = np.histogram(data[:,2], bins=20)
-        max_freq_index = np.argmax(hist)
-        
-        condition3 = data[:,2] >= edges[max_freq_index]*.5
-        condition4 = data[:,2] <= edges[max_freq_index]*1.5
-        
-        hist, edges = np.histogram(data[:,3], bins=20)
-        max_freq_index = np.argmax(hist)
-        condition5 = data[:,3] >= edges[max_freq_index]*.5
-        condition6 = data[:,3] <= edges[max_freq_index]*1.5
-
-        filter = condition1 & condition2 & condition3 & condition4 & condition5 & condition6
-        removed_data = data[~filter]
-        filtered_data= data[filter]
-
-        if len(filtered_data) != 17:
-            print("x0: ", x0)
-            print("data", data , "\n", len(data))
-            print("filtered", filtered_data, "\n", len(filtered_data))
-           # print("removed", removed_data, "\n" , len(removed_data))
-
-        for i,box in enumerate(filtered_data):
-            x, y, w, h = box
-            y = y - 5
-            cropped_image = self.original_image[y:y+h, x:x+w]
-            image_slice_path = "./temp_test/img_" + str(i) + ".jpg"
+            self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (x + 20, 0), (x2 -20  , self.original_image.shape[0]), (0, 250, 0),5)
+            
+            cropped_image = self.original_image[: , x :x2 + w2//2  ]
+            image_slice_path = f"./image_columns/{self.number}_col_" + str(i) + ".jpg"
             cv2.imwrite(image_slice_path, cropped_image)
+
+
+    # def get_mean_height_of_bounding_boxes(self):
+    #     heights = []
+    #     for bounding_box in self.bounding_boxes:
+    #         x, y, w, h = bounding_box
+    #         heights.append(h)
+    #     return np.mean(heights)
+    
+
+    # def sort_bounding_boxes_by_y_coordinate(self):
+    #     self.bounding_boxes = sorted(self.bounding_boxes, key=lambda x: x[1])
+
+    # def club_all_bounding_boxes_by_similar_y_coordinates_into_rows(self):
+    #     self.rows = []
+    #     half_of_mean_height = self.mean_height / 2
+    #     current_row = [ self.bounding_boxes[0] ]
+    #     for bounding_box in self.bounding_boxes[1:]:
+    #         current_bounding_box_y = bounding_box[1]
+    #         previous_bounding_box_y = current_row[-1][1]
+    #         distance_between_bounding_boxes = abs(current_bounding_box_y - previous_bounding_box_y)
+    #         if distance_between_bounding_boxes <= half_of_mean_height:
+    #             current_row.append(bounding_box)
+    #         else:
+    #             self.rows.append(current_row)
+    #             current_row = [ bounding_box ]
+    #     self.rows.append(current_row)
+
+    # def sort_all_rows_by_x_coordinate(self):
+    #     self.first_col =[]
+    #     self.third_col = []
+    #     for row in self.rows:
+    #         row.sort(key=lambda x: x[0])
+    #         self.first_col.append(list(row[0]))
+    #         self.third_col.append(list(row[2])) if len(row) > 2 else None
+    
+    # def extract_first_column(self):
+        
+    #     data = np.array(self.first_col)
+    #     # Calculate the first and third quartiles (Q1 and Q3)
+    #     hist, edges = np.histogram(data[:,0], bins=20)
+    #     max_freq_starting_index = np.argmax(hist)
+        
+    #     x0 = data[:,0]
+    #     condition1 = x0 >= edges[max_freq_starting_index]*.5
+    #     condition2 = x0 <= edges[max_freq_starting_index]*1.5
+
+
+    #     hist, edges = np.histogram(data[:,2], bins=20)
+    #     max_freq_index = np.argmax(hist)
+        
+    #     condition3 = data[:,2] >= edges[max_freq_index]*.5
+    #     condition4 = data[:,2] <= edges[max_freq_index]*1.5
+        
+    #     hist, edges = np.histogram(data[:,3], bins=20)
+    #     max_freq_index = np.argmax(hist)
+    #     condition5 = data[:,3] >= edges[max_freq_index]*.5
+    #     condition6 = data[:,3] <= edges[max_freq_index]*1.5
+
+    #     filter = condition1 & condition2 & condition3 & condition4 & condition5 & condition6
+    #     removed_data = data[~filter]
+    #     filtered_data= data[filter]
+
+    #     if len(filtered_data) != 17:
+    #         print("x0: ", x0)
+    #         print("data", data , "\n", len(data))
+    #         print("filtered", filtered_data, "\n", len(filtered_data))
+    #        # print("removed", removed_data, "\n" , len(removed_data))
+
+    #     for i,box in enumerate(filtered_data):
+    #         x, y, w, h = box
+    #         y = y - 5
+    #         cropped_image = self.original_image[y:y+h, x:x+w]
+    #         image_slice_path = "./temp_test/img_" + str(i) + ".jpg"
+    #         cv2.imwrite(image_slice_path, cropped_image)
         
 
-    def crop_each_bounding_box_and_ocr(self):
-        self.table = []
-        current_row = []
-        image_number = 0
-        for row in self.rows:
-            for bounding_box in row:
-                x, y, w, h = bounding_box
-                y = y - 5
-                cropped_image = self.original_image[y:y+h, x:x+w]
-                image_slice_path = "./ocr_slices/img_" + str(image_number) + ".jpg"
-                cv2.imwrite(image_slice_path, cropped_image)
-                results_from_ocr = self.get_result_from_tersseract(image_slice_path)
-                current_row.append(results_from_ocr)
-                image_number += 1
-            self.table.append(current_row)
-            current_row = []
+    # def crop_each_bounding_box_and_ocr(self):
+    #     self.table = []
+    #     current_row = []
+    #     image_number = 0
+    #     for row in self.rows:
+    #         for bounding_box in row:
+    #             x, y, w, h = bounding_box
+    #             y = y - 5
+    #             cropped_image = self.original_image[y:y+h, x:x+w]
+    #             image_slice_path = "./ocr_slices/img_" + str(image_number) + ".jpg"
+    #             cv2.imwrite(image_slice_path, cropped_image)
+    #             results_from_ocr = self.get_result_from_tersseract(image_slice_path)
+    #             current_row.append(results_from_ocr)
+    #             image_number += 1
+    #         self.table.append(current_row)
+    #         current_row = []
 
-    def get_result_from_tersseract(self, image_path):
-        output = subprocess.getoutput('tesseract ' + image_path + ' - -l eng --oem 3 --psm 7 --dpi 72 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789().calmg* "')
-        output = output.strip()
-        return output
+    # def get_result_from_tersseract(self, image_path):
+    #     output = subprocess.getoutput('tesseract ' + image_path + ' - -l eng --oem 3 --psm 7 --dpi 72 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789().calmg* "')
+    #     output = output.strip()
+    #     return output
 
-    def generate_csv_file(self):
-        with open("output.csv", "w") as f:
-            for row in self.table:
-                f.write(",".join(row) + "\n")
+    # def generate_csv_file(self):
+    #     with open("output.csv", "w") as f:
+    #         for row in self.table:
+    #             f.write(",".join(row) + "\n")
 
     def store_process_image(self, file_name, image):
         path = "./process_images/ocr_table_tool/" + file_name
