@@ -16,11 +16,15 @@ class OcrToTableTool:
         self.convert_contours_to_bounding_boxes()
         self.store_process_image('2_bounding_boxes.jpg', self.image_with_all_bounding_boxes)
         self.mean_height = self.get_mean_height_of_bounding_boxes()
-        self.sort_bounding_boxes_by_y_coordinate()
-        self.club_all_bounding_boxes_by_similar_y_coordinates_into_rows()
-        self.sort_all_rows_by_x_coordinate()
-        self.crop_each_bounding_box_and_ocr()
-        self.generate_csv_file()
+        # self.sort_bounding_boxes_by_y_coordinate()
+        # self.club_all_bounding_boxes_by_similar_y_coordinates_into_rows()
+        # self.sort_all_rows_by_x_coordinate()
+        # self.crop_each_bounding_box_and_ocr()
+        # self.generate_csv_file()
+
+        # remove this later
+        return self.image_with_all_bounding_boxes
+        
 
     def threshold_image(self):
         return cv2.threshold(self.grey_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
@@ -29,9 +33,9 @@ class OcrToTableTool:
         return cv2.cvtColor(self.image, self.dilated_image)
 
     def dilate_image(self):
+        
         kernel_to_remove_gaps_between_words = np.array([
-                [1,1,1,1,1,1,1,1,1,1],
-               [1,1,1,1,1,1,1,1,1,1]
+                [1,1,1,] for _ in range(20)   
         ])
         self.dilated_image = cv2.dilate(self.thresholded_image, kernel_to_remove_gaps_between_words, iterations=5)
         simple_kernel = np.ones((5,5), np.uint8)
@@ -107,28 +111,30 @@ class OcrToTableTool:
         max_freq_starting_index = np.argmax(hist)
         
         x0 = data[:,0]
-        condition1 = x0 >= edges[max_freq_starting_index] - 20 
-        condition2 = x0 <= edges[max_freq_starting_index] + 20
+        condition1 = x0 >= edges[max_freq_starting_index]*.5
+        condition2 = x0 <= edges[max_freq_starting_index]*1.5
 
 
         hist, edges = np.histogram(data[:,2], bins=20)
         max_freq_index = np.argmax(hist)
         
-        condition3 = data[:,2] >= edges[max_freq_index] - 40
-        condition4 = data[:,2] <= edges[max_freq_index] + 40
+        condition3 = data[:,2] >= edges[max_freq_index]*.5
+        condition4 = data[:,2] <= edges[max_freq_index]*1.5
         
         hist, edges = np.histogram(data[:,3], bins=20)
         max_freq_index = np.argmax(hist)
-        condition5 = data[:,3] >= edges[max_freq_index] - 20 
-        condition6 = data[:,3] <= edges[max_freq_index] + 20
+        condition5 = data[:,3] >= edges[max_freq_index]*.5
+        condition6 = data[:,3] <= edges[max_freq_index]*1.5
 
         filter = condition1 & condition2 & condition3 & condition4 & condition5 & condition6
         removed_data = data[~filter]
         filtered_data= data[filter]
-        print("x0: ", x0)
-        print("data", data , "\n", len(data))
-        print("filtered", filtered_data, "\n", len(filtered_data))
-#        print("removed", removed_data, "\n" , len(removed_data))
+
+        if len(filtered_data) != 17:
+            print("x0: ", x0)
+            print("data", data , "\n", len(data))
+            print("filtered", filtered_data, "\n", len(filtered_data))
+           # print("removed", removed_data, "\n" , len(removed_data))
 
         for i,box in enumerate(filtered_data):
             x, y, w, h = box

@@ -84,7 +84,26 @@ class TableExtractor:
                     contours_with_max_areas[i] = contour
                     break
 
-        self.contour_with_max_area = contours_with_max_areas[-1]
+        # if  contours_with_max_areas[0]:
+        #     self.contour_with_max_area = contours_with_max_areas[0]
+        # else:
+        #     self.contour_with_max_area = contours_with_max_areas[-1]
+
+
+        height, width = self.image.shape[:2]
+        # Find the bounding box of the contour
+        x, y, w, h = cv2.boundingRect(contours_with_max_areas[0])
+
+        # Check if the bounding box spans the whole width or height of the image
+        spans_whole_width = w == width and x == 0
+        spans_whole_height = h == height and y == 0
+
+        # Check if the contour spans the whole image
+        if spans_whole_width or spans_whole_height:
+            self.contour_with_max_area = contours_with_max_areas[-1]
+        else:
+            self.contour_with_max_area = contours_with_max_areas[0]
+
 
             
 

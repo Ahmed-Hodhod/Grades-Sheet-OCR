@@ -5,23 +5,28 @@ import cv2
 
 
 path_to_image = "nutrition.jpg"
-path_to_image = "grade_sheet/gradesheet/IMG_6241.JPG"
-table_extractor = te.TableExtractor(path_to_image)
-perspective_corrected_image = table_extractor.execute()
-#cv2.imshow("perspective_corrected_image", perspective_corrected_image)
-
-lines_remover = tlr.TableLinesRemover(perspective_corrected_image)
-image_without_lines = lines_remover.execute()
-#cv2.imshow("image_without_lines", image_without_lines)
 
 
+for i in range (22,25):
+    print(i)
+    path_to_image = f"grade_sheet/{i}.jpg"
+    table_extractor = te.TableExtractor(path_to_image)
+    perspective_corrected_image = table_extractor.execute()
+    #cv2.imshow("perspective_corrected_image", perspective_corrected_image)
+
+    # lines_remover = tlr.TableLinesRemover(perspective_corrected_image)
+    # image_without_lines = lines_remover.execute()
+    # #cv2.imshow("image_without_lines", image_without_lines)
+    # ########## test #############3
+    # ######### test #############
 
 
-ocr_tool = ottt.OcrToTableTool(image_without_lines, perspective_corrected_image)
-ocr_tool.execute()
+    # ocr_tool = ottt.OcrToTableTool(image_without_lines, perspective_corrected_image)
+    # image_with_contours = ocr_tool.execute()
+    cv2.imwrite(f"./tables/{i}.jpg", perspective_corrected_image)
 
-##################################### test #######################
-ocr_tool.extract_first_column()
+    ##################################### test #######################
+    #ocr_tool.extract_first_column()
 ###################### test #################################
 
 

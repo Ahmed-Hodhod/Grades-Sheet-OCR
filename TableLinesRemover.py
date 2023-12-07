@@ -38,13 +38,12 @@ class TableLinesRemover:
 
     def erode_vertical_lines(self):
         hor = np.array([[1,1,1,1,1,1]])
-
-        # remove the short horizontal lines and keep the longer ones 
-        kernel = np.ones((3,15 ), np.uint8)
       
         image = cv2.erode(self.inverted_image, hor, iterations=10)
         image = cv2.dilate(image, hor, iterations=10)
 
+        # remove the short horizontal lines and keep the longer ones 
+        kernel = np.ones((3,15 ), np.uint8)
         self.vertical_lines_eroded_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
 
     def erode_horizontal_lines(self):
@@ -65,6 +64,9 @@ class TableLinesRemover:
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
         self.combined_image_dilated = cv2.dilate(self.combined_image, kernel, iterations=5)
 
+
+
+        
 
     def subtract_combined_and_dilated_image_from_original_image(self):
         self.image_without_lines = cv2.subtract(self.inverted_image, self.combined_image_dilated)
