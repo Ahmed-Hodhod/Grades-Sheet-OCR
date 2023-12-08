@@ -34,18 +34,23 @@ class ColumnExtractor:
     def threshold_image(self):
         self.column_borders = cv2.threshold(self.grey, 127, 255, cv2.THRESH_BINARY)[1]
 
+        # test 
+        #self.column_borders = cv2.equalizeHist(self.column_borders)
+
     def invert_image(self):
         self.inverted_image = cv2.bitwise_not(self.column_borders)
 
     def erode_vertical_lines(self):
-        hor = np.array([[1,1,1,1,1,1]])
-      
+        hor = np.array([[1 for _ in range(5)], ])
         image = cv2.erode(self.inverted_image, hor, iterations=10)
-        image = cv2.dilate(image, hor, iterations=10)
 
-        # remove the short horizontal lines and keep the longer ones 
-        kernel = np.ones((3,15 ), np.uint8)
-        self.vertical_lines_eroded_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+        hor = np.array([[1 for _ in range(10)],[1 for _ in range(10)] ])
+        self.vertical_lines_eroded_image = cv2.dilate(image, hor, iterations=10)
+
+
+        # # remove the short horizontal lines and keep the longer ones 
+        # kernel = np.ones((1,15 ), np.uint8)
+        # self.vertical_lines_eroded_image = cv2.morphologyEx(self.vertical_lines_eroded_image, cv2.MORPH_OPEN, kernel)
 
     def erode_horizontal_lines(self):
         ver = np.array([[1],
@@ -110,9 +115,15 @@ class ColumnExtractor:
 
             self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (x + 20, 0), (x2 -20  , self.original_image.shape[0]), (0, 250, 0),5)
             
-            cropped_image = self.original_image[: , x :x2 + w2//2  ]
+            cropped_image = self.original_image[: , x +3:x2 + w2//2   ]
             image_slice_path = f"./image_columns/{self.order_of_image}_col_" + str(i) + ".jpg"
             cv2.imwrite(image_slice_path, cropped_image)
+
+        # #cropped_image = self.vertical_lines_eroded_image[: , x  :x2 + w2 ]
+        # cropped_image = self.vertical_lines_eroded_image
+        # image_slice_path = f"./image_rows/{self.order_of_image}_rows_" + str(i) + ".jpg"
+        # cv2.imwrite(image_slice_path, cropped_image)
+
 
     def store_process_image(self, file_name, image):
         path = "./ColumnExtractor/" + file_name

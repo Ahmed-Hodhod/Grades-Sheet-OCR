@@ -73,8 +73,7 @@ class TableLinesRemover:
 
 
 
-        
-
+    
     def subtract_combined_and_dilated_image_from_original_image(self):
         self.image_without_lines = cv2.subtract(self.inverted_image, self.combined_image_dilated)
 
