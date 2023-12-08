@@ -14,7 +14,7 @@ class OCR:
 
     def execute(self):
         self.convert_cell_to_text()
-        self.generate_csv_file()
+        #self.generate_csv_file()
 
     def convert_cell_to_text(self):
         files = os.listdir(self.cells_path)

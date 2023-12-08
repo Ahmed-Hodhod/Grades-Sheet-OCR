@@ -89,11 +89,3 @@ class Classifier:
         return accuracy * 100 
 
 
-classifier = Classifier(path_to_dataset="./digits_dataset/")
-
-# Example
-# test_img_path = r'test5.jpg'
-# img = cv2.imread(test_img_path)
-# classifier.train_model()
-# img = cv2.resize(img, (32, 32))
-# print(classifier.classify(img) ) 

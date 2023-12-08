@@ -113,8 +113,8 @@ class CellExtractor:
             self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (0, y), (self.original_image.shape[1]  , y2), (0, 250, 0),3)
             cropped_image = self.original_image[y:y2 , :  ]
             
-
-            image_slice_path = f"./Cells/{image_order}/seg_{i}_" + ".jpg"
+            image_slice_path = f"./Cells/{image_order}/{i}_seg" + ".jpg"
+            
             cv2.imwrite(image_slice_path, cropped_image)
 
     
