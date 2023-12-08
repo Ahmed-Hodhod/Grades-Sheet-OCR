@@ -21,7 +21,8 @@ for i in range (1,25):
   
     image = np.array(cv2.imread(f"./image_columns/{i}_col_0.jpg"))
     cell_extractor = cell.CellExtractor(image)
-    image_without_lines = cell_extractor.execute()
+    image_without_lines = cell_extractor.execute(i)
+
     cv2.imwrite(f"./images_without_lines/{i}.jpg", image_without_lines)
 
     ##################################### test #######################
