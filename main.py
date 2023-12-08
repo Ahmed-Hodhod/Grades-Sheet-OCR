@@ -2,13 +2,15 @@ import OcrToTableTool as ottt
 import TableExtractor as te
 import ColumnExtractor as ce 
 import CellExtractor as cell 
+import OCR as ocr 
+
 import cv2
 import time
 import numpy as np
 
 
 
-for i in range (1,25):
+for i in range (1,2):
     # # print(i)
     # path_to_image = f"grade_sheet/{i}.jpg"
     # table_extractor = te.TableExtractor(path_to_image)
@@ -23,7 +25,10 @@ for i in range (1,25):
     cell_extractor = cell.CellExtractor(image)
     image_without_lines = cell_extractor.execute(i)
 
-    cv2.imwrite(f"./images_without_lines/{i}.jpg", image_without_lines)
+    # cv2.imwrite(f"./images_without_lines/{i}.jpg", image_without_lines)
+    path = f"./Cells/{i}"
+    text_converter = ocr.OCR(path)
+    text_converter.execute()
 
     ##################################### test #######################
     #ocr_tool.extract_first_column()
