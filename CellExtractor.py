@@ -102,7 +102,7 @@ class CellExtractor:
         sorted_contours = sorted(self.contours, key=lambda c: cv2.boundingRect(c)[1]) 
 
         self.original_image = self.image
-        os.makedirs(f"./Cells/{image_order}", exist_ok=True)
+        os.makedirs(f"./Grade/{image_order}", exist_ok=True)
         for i, contour in enumerate( sorted_contours[0:-1]):
             x, y, w, h = cv2.boundingRect(contour)
             x2, y2, w2, _ = cv2.boundingRect(sorted_contours[i+1])
@@ -113,7 +113,7 @@ class CellExtractor:
             self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (0, y), (self.original_image.shape[1]  , y2), (0, 250, 0),3)
             cropped_image = self.original_image[y:y2 , :  ]
             
-            image_slice_path = f"./Cells/{image_order}/{i}_seg" + ".jpg"
+            image_slice_path = f"./Grade/{image_order}/{i}_seg" + ".jpg"
             
             cv2.imwrite(image_slice_path, cropped_image)
 
