@@ -95,8 +95,8 @@ class ColumnExtractor:
         sorted_contours = sorted(self.contours, key=lambda c: cv2.boundingRect(c)[0]) 
 
         self.original_image = self.original_image
-        if not os.path.exists("./image_columns"):
-            os.makedirs("./image_columns")
+        if not os.path.exists("./processing/image_columns"):
+            os.makedirs("./processing/image_columns")
 
         
         for i, contour in enumerate( sorted_contours[0:-1]):
@@ -110,6 +110,6 @@ class ColumnExtractor:
             self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (x + 20, 0), (x2 -20  , self.original_image.shape[0]), (0, 250, 0),5)
             
             cropped_image = self.original_image[: , x +3:x2 + w2//2   ]
-            image_slice_path = f"./image_columns/" + str(i) + ".jpg"
+            image_slice_path = f"./processing/image_columns/" + str(i) + ".jpg"
             cv2.imwrite(image_slice_path, cropped_image)
 

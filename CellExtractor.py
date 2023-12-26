@@ -6,45 +6,22 @@ import TableExtractor as te
 import os 
 
 class CellExtractor:
-    def __init__(self, image):
+    def __init__(self, image, order):
+        self.order = order #  the order of the column
         self.image = image
 
 
-    def execute(self,number):
-        self.grayscale_image()
+    def execute(self,contours=None):
+        if contours is None:
+            self.grayscale_image()
+            self.threshold_image()
+            self.invert_image()
+            self.keep_only_horizontal_lines()
+            self.find_contours()
+
+        contours=  self.convert_contours_to_bounding_boxes(contours)  
     
-        self.threshold_image()
-        self.invert_image()
-        self.keep_only_horizontal_lines()
-        self.find_contours()
-        self.convert_contours_to_bounding_boxes(number)
-
-        # self.store_process_image('contoured_image.jpg', self.image_with_contours_drawn)
-
-
-        # self.subtract_horizontal_lines_from_image()
-
-        # self.store_process_image('image_without_lines.jpg', self.image_without_lines)
-
-        #gives good  results
-        #return cv2.adaptiveThreshold(cv2.medianBlur(self.gray_image,7),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
-        #return self.dilated_image
-        #return cv2.bilateralFilter(self.gray_image,9,75,75)
-
-
-    
-        # self.find_contours()
-        # self.store_process_image('1_contours.jpg', self.image_with_contours_drawn)
-        # self.convert_contours_to_bounding_boxes()
-        # self.store_process_image('2_bounding_boxes.jpg', self.image_with_all_bounding_boxes)
-        # self.mean_height = self.get_mean_height_of_bounding_boxes()
-        # self.sort_bounding_boxes_by_y_coordinate()
-        # self.club_all_bounding_boxes_by_similar_y_coordinates_into_rows()
-        # self.sort_all_rows_by_x_coordinate()
-        # self.crop_each_bounding_box_and_ocr()
-        # self.generate_csv_file()
-
-        return  self.image_with_all_bounding_boxes
+        return contours if self.order == 0 else None
 
     def grayscale_image(self):
         self.gray_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -95,14 +72,14 @@ class CellExtractor:
         cv2.drawContours(self.image_with_contours_drawn, self.contours, -1, (0, 255, 0), 5)
 
 
-
-    def convert_contours_to_bounding_boxes(self,image_order):
-        self.bounding_boxes = []
-        self.image_with_all_bounding_boxes = self.image.copy()
-        sorted_contours = sorted(self.contours, key=lambda c: cv2.boundingRect(c)[1]) 
+    def convert_contours_to_bounding_boxes(self,sorted_contours=None):
+        if sorted_contours is None:
+            self.bounding_boxes = []
+            self.image_with_all_bounding_boxes = self.image.copy()
+            sorted_contours = sorted(self.contours, key=lambda c: cv2.boundingRect(c)[1]) 
 
         self.original_image = self.image
-        os.makedirs(f"./Grade/{image_order}", exist_ok=True)
+        os.makedirs(f"././processing/column_cells/{self.order}", exist_ok=True)
         for i, contour in enumerate( sorted_contours[0:-1]):
             x, y, w, h = cv2.boundingRect(contour)
             x2, y2, w2, _ = cv2.boundingRect(sorted_contours[i+1])
@@ -110,15 +87,10 @@ class CellExtractor:
             if y2 - y < 15:
                 continue
             
-            self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (0, y), (self.original_image.shape[1]  , y2), (0, 250, 0),3)
+            #self.image_with_all_bounding_boxes = cv2.rectangle(self.image_with_all_bounding_boxes, (0, y), (self.original_image.shape[1]  , y2), (0, 250, 0),3)
             cropped_image = self.original_image[y:y2 , :  ]
             
-            image_slice_path = f"./Grade/{image_order}/{i}_seg" + ".jpg"
+            image_slice_path = f"./processing/column_cells/{self.order}/{i}" + ".jpg"
             
             cv2.imwrite(image_slice_path, cropped_image)
-
-    
-
-    def store_process_image(self, file_name, image):
-        path = "./Cells/" + file_name
-        cv2.imwrite(path, image)
+        return  sorted_contours
